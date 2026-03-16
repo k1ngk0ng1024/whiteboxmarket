@@ -1,0 +1,96 @@
+国密白盒加密算法
+背景
+
+传统的密码算法（AES、3DES、SM4等）在白盒攻击环境中不能安全使用，密钥成为最薄弱的一环。在当前的攻击手段中，很容易通过对二进制文件的反汇编、静态分析，对运行环境的控制结合观测寄存器、内存分析等来获取密码。
+
+白盒加密简介
+
+保护密钥安全是密钥白盒产品的一个基本诉求。白盒密码需要抵抗白盒攻击，构造白盒密码算法有两种策略，标准密码算法白盒化和构造全新密码算法。标准密码算法白盒化，在标准密码算法安全理论的基础上和不改变原算法功能的前提下，将原有密码算法通过白盒密码技术进行设计，在白盒攻击环境下能够有效保证其密钥安全。构造全新密码算法，新算法密码分析结果不能弱于标准密码算法同时具备抵抗白盒攻击的能力。
+
+京东金融SM4 白盒加密算法，属于标准算法白盒化类型，对国密对称加密算法SM4进行白盒化的处理。
+
+WSM4算法
+
+WSM4是京东金融安全SDK提供的SM4白盒加密算法，是动态白盒。白盒库可以动态更新，不需要硬编码在设备，具有以下特点：
+
+1、一机一密，白盒库设备相关；
+
+2、轻量级，适用于移动设备和物联网等；
+
+3、对查找表随机非线性操作；
+
+4、多种安全防护技术，增强对密钥白盒环境下非法调用、注入、内存修改的防护。
+
+5、国内为数不多的支持国密算法的白盒算法，能满足国密推行的要求。
+
+API 使用
+
+1、初始化
+
+类名	函数名
+Wsm4Manager	requestWsm4Result
+示例代码：
+
+//初始化白盒
+Wsm4Manager manager = new Wsm4Manager(this,cryptoUtils);
+manager.requestWsm4Result();
+2、加解密
+
+类名	函数名
+CryptoUtils	wsm4_crypt_ecb_nopadding
+CryptoUtils	wsm4_crypt_ecb_padding
+CryptoUtils	wsm4_crypt_cbc_nopadding
+CryptoUtils	wsm4_crypt_cbc_padding
+
+
+Wsm4_crypt_ecb
+参数说明：
+
+属性	类型	默认值	是否必填	说明
+mode	int		是	1:SM4_ENCRYPT 0: SM4_DECRYPT
+input	byte[]		是	原文
+返回值说明：
+
+5字节状态信息（SUCCESS:00000）+加解密结果
+
+接口声明：
+
+public byte[] Wsm4_crypt_ecb( int mode,byte[] input)
+示例代码：
+
+private void wsm4CryptEcb() {
+    int modeEncrypt = 1;//加密
+    int modeDecrypt = 0;//解密
+    String sourceData = "qazwsxedcrfvtg";
+    byte[] resultEncrypt = cryptoUtils.Wsm4_crypt_ecb(modeEncrypt, sourceData.getBytes());
+    Log.d(TAG, "加密结果:" + new String(resultEncrypt));
+    byte[] resultDecrypt = cryptoUtils.Wsm4_crypt_ecb(modeDecrypt, JDJRSecureUtils.getRetData(resultEncrypt));
+    Log.d(TAG, "解密结果:" + new String(resultDecrypt));
+}
+
+Wsm4_crypt_cbc
+参数说明：
+
+属性	类型	默认值	是否必填	说明
+mode	int		是	1:SM4_ENCRYPT 0: SM4_DECRYPT
+iv	byte[]		是	iv向量
+input	byte[]		是	原文
+返回值说明：
+
+int result
+
+接口声明：
+
+ public byte[] Wsm4_crypt_cbc( int mode,byte[] iv,byte[] input)
+示例代码：
+
+private void wsm4CryptCbc() {
+    int modeEncrypt = 1;//加密
+    int modeDecrypt = 0;//解密
+    byte[] iv = "woshiivawoshiiva".getBytes();
+    byte[] sourceData = "qazwsxedcrfvtgb1".getBytes();
+    byte[] resultEncrypt = cryptoUtils.Wsm4_crypt_cbc(modeEncrypt, iv, sourceData);
+    Log.d(TAG, "加密结果:" + new String(resultEncrypt));
+    byte[] resultDecrypt = cryptoUtils.Wsm4_crypt_cbc(modeDecrypt,iv,JDJRSecureUtils.getRetData(resultEncrypt));
+    Log.d(TAG, "解密结果:" + new String(resultDecrypt));
+   }
